@@ -1,0 +1,86 @@
+<taglib name="Admin\TagLib\EasyUI" />
+
+<easyui:propertygrid options="propertygrid.options" />
+
+<script type="text/javascript">
+var setting_site_propertygrid_id = 'setting_site_propertygrid';
+var setting_site_propertygrid_toolbar = [
+	{ text: '保存', iconCls: 'icons-table-table_save', handler: settingSiteSave },
+	{ text: '刷新', iconCls: 'icons-table-table_refresh', handler: settingSiteRefresh },
+	{ text: '导出', iconCls: 'icons-table-table_go', handler: settingSiteExport },
+	{ text: '导入', iconCls: 'icons-table-table_edit', handler: settingSiteImport },
+	{ text: '还原', iconCls: 'icons-table-table_gear', handler: settingSiteDefault }
+];
+//保存
+function settingSiteSave(){
+	var data = [];
+	var rows = $('#'+setting_site_propertygrid_id).propertygrid('getChanges');
+	for(var i=0; i<rows.length; i++){
+		data.push({'key': rows[i]['key'], 'value': rows[i]['value']});
+	}
+	$.post('<{:U('Setting/site?dosubmit=1')}>', {data: data}, function(res){
+		if(!res.status){
+			$.messager.alert('提示信息', res.info, 'error');
+		}else{
+			$.messager.alert('提示信息', res.info, 'info');
+		}
+	}, 'json');
+}
+//刷新
+function settingSiteRefresh(){
+	$('#'+setting_site_propertygrid_id).propertygrid('reload');
+}
+//恢复默认
+function settingSiteDefault(){
+	$.messager.confirm('提示信息', '确定要恢复出厂设置吗？', function(result){
+		if(!result) return true;
+		$.post('<{:U('Setting/siteDefault')}>', function(res){
+			if(!res.status){
+				$.messager.alert('提示信息', res.info, 'error');
+			}else{
+				$.messager.alert('提示信息', res.info, 'info');
+				settingSiteRefresh();
+			}
+		}, 'json');
+	})
+}
+//导出
+function settingSiteExport(){
+	$.post('<{:U('Setting/siteExport')}>', function(res){
+		if(!res.status){
+			$.messager.alert('提示信息', res.info, 'error');
+		}else{
+			//$.messager.alert('提示信息', res.info, 'info');
+			window.location.href = res.url;
+		}
+	}, 'json');
+}
+//导入
+function settingSiteImport(){
+	$.messager.confirm('提示信息', '该操作将清空所有数据，确定要继续吗？', function(result){
+		if(result){
+			globelUploadOnClick.init(
+					'<{:U('Upload/import', array('from'=>urlencode('站点设置')))}>',
+					function(json){    //上传成功回调函数
+						$.post('<{:U('Setting/siteImport')}>', {filename: json.filename}, function(res){
+							if(!res.status){
+								$.messager.alert('提示信息', res.info, 'error');
+							}else{
+								$.messager.alert('提示信息', res.info, 'info');
+								settingSiteRefresh();
+							}
+						}, 'json');
+					},
+					function(filename){  //上传验证函数
+						if(!filename.match(/\.data$/)){
+							$.messager.alert('提示信息', '上传文件后缀不允许', 'error');
+							return false;
+						}
+						return true;
+					}
+				);
+		}
+	});
+	return false;
+}
+</script>

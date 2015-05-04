@@ -1,0 +1,58 @@
+<extend name="Common:base"/>
+
+<block name="container">
+	<div class="col-md-12">
+		<div class="caption">
+			<h3 class="text-muted">网站建设中...</h3>
+			<p>交流群：&nbsp;&nbsp;
+			1群：212044599 <font color="red">（已满）</font>&nbsp;&nbsp;&nbsp;&nbsp;
+			2群：219126334</p>
+		</div>
+		<hr/>
+	</div>
+	<div class="col-md-12">
+		<!-- 多说评论框 start -->
+		<div class="ds-thread" data-thread-key="7c0912a017aa5e66c824db6b8d06418b" data-title="wangdong" data-url="http://wangdong.sinaapp.com"></div>
+		<!-- 多说评论框 end -->
+		<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+		<script type="text/javascript">
+			var duoshuoQuery = {short_name:"wangdongplugin"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0]
+						|| document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+		</script>
+		<!-- 多说公共JS代码 end -->
+	</div>
+	<!-- 公告 -->
+	<div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="z-index: 99999">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">网站建设中</h4>
+				</div>
+				<div class="modal-body">
+					<p>前台页面设计中，立即访问后台管理</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" onclick="window.location.href='<{:U('Admin/Index/index')}>'">确定</button>
+				</div>
+
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+</block>
+
+<block name="bottom">
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#myModal').modal('show');
+		})
+	</script>
+</block>

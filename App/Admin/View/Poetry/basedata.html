@@ -1,0 +1,70 @@
+<script writer="text/javascript">
+    $(function(){
+        $("#update").click(function(){
+            var data ={ };
+            data['catelist'] = $("#catelist").val();
+            if(!data['catelist']){
+                $.messager.alert('提示信息', '信息类型不能为空', 'error');
+                return false;
+            }
+            data['kindlist'] = $("#kindlist").val();
+            if(!data['kindlist']){
+                $.messager.alert('提示信息', '类型不能为空', 'error');
+                return false;
+            }
+            data['typelist'] = $("#typelist").val();
+            if(!data['kindlist']){
+                $.messager.alert('提示信息', '形式不能为空', 'error');
+                return false;
+            }
+            //作者简介处理
+            data['dynastylist'] =  $("#dynastylist").val();
+            if(!data['dynastylist']){
+                $.messager.alert('提示信息', '朝代不能为空', 'error');
+                return false;
+            }
+            $.post('<{:U('Poetry/basedata')}>',  {info: data}, function(res){
+                if(!res.status){
+                    $.messager.alert('提示信息', res.info, 'error');
+                }else{
+                    $.messager.alert('提示信息', res.info, 'info');
+
+                }
+            });
+        });
+    });
+</script>
+
+<form id="basedata_form">
+    <table cellspacing="6" width="580">
+        <tr>
+            <td width="70">信息类型：</td>
+            <td> <textarea id="catelist"  name="info[catelist]" style="font-size: 12px;width:300px;height:20px; "><{$catelist}></textarea> </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td width="70">类型：</td>
+            <td> <textarea id="kindlist"  name="info[kindlist]" style="font-size: 12px;width:300px;height:20px; "><{$kindlist}></textarea> </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td  width="120">形式：</td>
+            <td>
+                <textarea id="typelist" name="info[typelist]" style="font-size:12px; width:300px;height:150px;"><{$typelist}></textarea>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>朝代：</td>
+            <td colspan="2">
+<textarea id="dynastylist" name="info[dynastylist]" style="font-size: 12px;width:300px;height:40px;"><{$dynastylist}></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td colspan="2">
+                <input name="update" id="update" type="button" value="更新"/>
+            </td>
+        </tr>
+    </table>
+</form>

@@ -1,0 +1,71 @@
+<script writer="text/javascript">
+    $(function(){
+        $.formValidator.initConfig({formID:"poetry_writer_editinfo_dialog_form",onError:function(msg){/*$.messager.alert('错误提示', msg, 'error');*/},onSuccess:poetryWriterAddinfoDialogFormSubmit,submitAfterAjaxPrompt:'有数据正在异步验证，请稍等...',inIframe:true});
+    })
+    function poetryWriterAddinfoDialogFormSubmit(){
+        var data ={ };
+        data['adder'] = $("#poetry_writer_editinfo_dialog_form_adder").val();
+        if(!data['adder']){
+            $.messager.alert('提示信息', '添加者名字不能为空', 'error');
+            return false;
+        }
+        data['title'] = $("#poetry_writer_editinfo_dialog_form_title").val();
+        if(!data['title']){
+            $.messager.alert('提示信息', '标题不能为空', 'error');
+            return false;
+        }
+        data['content'] = $("#poetry_writer_editinfo_dialog_form_content<{$info.cateid}>").val();
+        if(!data['content']){
+            $.messager.alert('提示信息', '内容不能为空', 'error');
+            return false;
+        }
+        var fcateid = <{$info['cateid']}>;
+        $.post('<{:U('Poetry/editInfo',array('infoid'=>$info['infoid']))}>',  {info: data}, function(res){
+            if(!res.status){
+                $.messager.alert('提示信息', res.info, 'error');
+            }else{
+                $.messager.alert('提示信息', res.info, 'info');
+                $('#poetry_editinfo_dialog').dialog('close');
+                if(fcateid==0){
+                    poetrywriterListRefresh();
+                }else{
+                    poetrypoetryListRefresh();
+                }
+            }
+        })
+    }
+</script>
+
+<form id="poetry_writer_editinfo_dialog_form">
+    <table cellspacing="6" width="580">
+        <tr>
+            <td width="80"><if condition="$info['cateid'] eq 0"> 作者<else /> 作品</if>名字</td>
+            <td><{$fname}></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>添加者名字：</td>
+            <td><input id="poetry_writer_editinfo_dialog_form_adder" type="text" name="info[adder]" style="width:180px;height:22px" value="<{$info.adder}>" /></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>标题：</td>
+            <td><input id="poetry_writer_editinfo_dialog_form_title" type="text" name="info[title]" style="width:180px;height:22px" value="<{$info.title}>" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>内容：</td>
+            <td colspan="2">
+                <textarea id="poetry_writer_editinfo_dialog_form_content<{$info.cateid}>" name="info[content]"  style="width:95%;display: none;" rows="8" >
+                    <{$info.content}>
+                </textarea>
+                <script>
+                    $('#poetry_writer_editinfo_dialog_form_content<{$info.cateid}>').xheditor({tools:'Bold,Source,Pastetext',forcePtag:false});
+                </script>
+
+            </td>
+        </tr>
+
+    </table>
+</form>

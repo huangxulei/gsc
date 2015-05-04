@@ -1,0 +1,50 @@
+<script type="text/javascript">
+	$(function(){
+		$.formValidator.initConfig({formID:"member_typelist_edit_dialog_form",onError:function(msg){/*$.messager.alert('错误提示', msg, 'error');*/},onSuccess:memberTypelistEditDialogFormSubmit,submitAfterAjaxPrompt:'有数据正在异步验证，请稍等...',inIframe:true});
+		$("#member_typelist_edit_dialog_form_name").formValidator({onShow:"请输入分类名称",onFocus:"分类名称不能为空"}).inputValidator({min:1,max:999,onError:"分类名称不能为空"}).ajaxValidator({
+			type : "post",
+			url : "<{:U('Member/public_checkTypeName')}>",
+			data : {typename:function(){return $("#member_typelist_edit_dialog_form_name").val()}, default:'<{$info.typename}>'},
+			datatype : "json",
+			async:'false',
+			success : function(data){
+				var json = $.parseJSON(data);
+				return json.status == 1 ? false : true;
+			},
+			onError : "分类名称已存在",
+			onWait : "请稍候..."
+		});
+	})
+	function memberTypelistEditDialogFormSubmit(){
+		$.post('<{:U('Member/typeEdit?id='.$info['typeid'])}>', $("#member_typelist_edit_dialog_form").serialize(), function(res){
+			if(!res.status){
+				$.messager.alert('提示信息', res.info, 'error');
+			}else{
+				$.messager.alert('提示信息', res.info, 'info');
+				$('#member_typelist_edit_dialog').dialog('close');
+				memberTypeListRefresh();
+			}
+		})
+	}
+</script>
+<form id="member_typelist_edit_dialog_form">
+	<table cellspacing="6" width="100%">
+		<tr>
+			<td width="80">分类名称：</td>
+			<td><input id="member_typelist_edit_dialog_form_name" type="text" name="info[typename]" value="<{$info.typename}>" style="width:180px;height:22px" /></td>
+			<td><div id="member_typelist_edit_dialog_form_nameTip"></div></td>
+		</tr>
+		<tr>
+			<td>分类描述：</td>
+			<td colspan="2"><textarea name="info[description]" style="width:90%;height:60px;font-size:12px"><{$info.description}></textarea></td>
+		</tr>
+		<tr>
+			<td>是否启用：</td>
+			<td colspan="2"><label><input type="radio" name="info[disabled]" value="0" <eq name="info.disabled" value="0">checked</eq> />启用</label> <label><input type="radio" name="info[disabled]" value="1" <eq name="info.disabled" value="1">checked</eq> />禁止</label></td>
+		</tr>
+		<tr>
+			<td>排序：</td>
+			<td colspan="2"><input type="text" name="info[listorder]" value="<{$info.listorder}>" style="width:40px;height:22px" /></td>
+		</tr>
+	</table>
+</form>

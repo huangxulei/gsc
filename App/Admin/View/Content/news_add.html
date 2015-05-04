@@ -1,0 +1,80 @@
+<div class="easyui-layout" data-options="fit:true,border:false">
+	<div data-options="region:'north',border:true" style="height:30px;padding:1px">
+		<a href="javascript:;" onclick="contentAddNewsSave()" class="easyui-linkbutton" data-options="iconCls: 'icons-page-page_save',plain:true">保存</a>
+		<a href="javascript:;" onclick="condtentAddNewsGoBack()" class="easyui-linkbutton" data-options="iconCls: 'icons-page-page_go',plain:true">返回</a>
+	</div>
+
+	<div data-options="region:'center',border:false">
+		<iframe id="content_add_news_editor" name="content_add_news_editor" src="<{:U('Content/editor_iframe', array('catid'=>$catid))}>" frameborder="0" width="100%" height="100%" style="margin-bottom:-5px"></iframe>
+	</div>
+
+	<div data-options="region:'east',split:true" title="属性" style="width:280px">
+		<table id="content_add_news_propertygrid_id" class="easyui-propertygrid" data-options='"border":false,"fit":true,"showHeader":true,"columns":[[{"field":"name","title":"\u5c5e\u6027\u540d\u79f0","width":100},{"field":"value","title":"\u5c5e\u6027\u503c","width":200}]],"showGroup":true,"scrollbarSize":0,"url":"<{:U('Content/add_news', array('catid'=>$catid, 'grid'=>'propertygrid'))}>"'></table>
+	</div>
+
+</div>
+
+<script type="text/javascript">
+//返回栏目列表
+function condtentAddNewsGoBack(){
+	contentRightTreeTypeFunc('0', <{$catid|default=0}>);
+}
+
+//保存操作
+function contentAddNewsSave(){
+	var data = {};
+	var rows = $('#content_add_news_propertygrid_id').propertygrid('getRows');
+	for(var i=0; i<rows.length; i++){
+		//缩略图需单独处理
+		if(rows[i]['key'] == 'thumb'){
+			rows[i]['value'] = $('#content_add_news_thumb_value').attr('src');
+			if(/^data:image\/png;base64/.test(rows[i]['value'])) rows[i]['value'] = '';
+		}
+		//验证字段
+		if(rows[i]['required'] && !rows[i]['value']){
+			$.messager.alert('提示信息', rows[i]['name'].replace('*', '') + '不能为空', 'error');
+			return false;
+		}
+		data[rows[i]['key']] = rows[i]['value'];
+	}
+	//内容处理
+	data['content'] = window.frames["content_add_news_editor"].getSource();
+	if(!data['content']){
+		$.messager.alert('提示信息', '内容不能为空', 'error');
+		return false;
+	}
+
+	$.post('<{:U('Content/add_news', array('catid'=>$catid, 'dosubmit'=>1))}>', {info: data}, function(res){
+		if(!res.status){
+			$.messager.alert('提示信息', res.info, 'error');
+		}else{
+			$.messager.alert('提示信息', res.info, 'info');
+			condtentAddNewsGoBack();
+		}
+	}, 'json');
+}
+
+//缩略图上传
+function contentAddNewsThumbClick(that){
+	globelUploadOnClick.init(
+		'<{:U('Upload/thumb', array('width'=>112, 'height'=>88))}>',
+		function(data){
+			if(data.msg && (typeof(data.msg) == 'string' || typeof(data.msg.url) == 'string')){
+				var url = (typeof(data.msg) == 'string') ? data.msg : data.msg.url;
+				$(that).attr('src', url);
+			}else{
+				var tip = data.err ? data.err : '上传失败';
+				parent.$.messager.alert('提示信息', tip, 'error');
+			}
+		},
+		function(filename){  //上传验证函数
+			if(!filename.match(/\.jpg$|\.png$|\.gif$|\.bmp$/i)){
+				$.messager.alert('提示信息', '上传文件后缀不允许', 'error');
+				return false;
+			}
+			return true;
+		}
+	);
+	return false;
+}
+</script>

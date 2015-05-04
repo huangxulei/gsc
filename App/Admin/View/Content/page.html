@@ -1,0 +1,50 @@
+<div class="easyui-layout" data-options="fit:true,border:false">
+	<div data-options="region:'north',border:true" style="height:30px;padding:1px">
+		<a href="javascript:;" onclick="contentPageSave()" class="easyui-linkbutton" data-options="iconCls: 'icons-page-page_save',plain:true">保存</a>
+		<a href="#" class="easyui-linkbutton" data-options="iconCls: 'icons-page-page_find',plain:true">预览</a>
+	</div>
+	
+	<div data-options="region:'center',border:false">
+		<iframe id="content_page_editor" name="content_page_editor" src="<{:U('Content/editor_iframe', array('catid'=>$catid, 'callback'=>'contentPageEditorInit'))}>" frameborder="0" width="100%" height="100%" style="margin-bottom:-5px"></iframe>
+	</div>
+	
+	<div data-options="region:'east',split:true" title="属性" style="width:280px">
+		<table id="content_page_propertygrid_id" class="easyui-propertygrid" data-options='"border":false,"fit":true,"showHeader":true,"columns":[[{"field":"name","title":"\u5c5e\u6027\u540d\u79f0","width":100},{"field":"value","title":"\u5c5e\u6027\u503c","width":200}]],"showGroup":true,"scrollbarSize":0,"url":"<{:U('Content/page', array('catid'=>$catid, 'grid'=>'propertygrid'))}>"'></table>
+	</div>
+	
+</div>
+
+<script type="text/javascript">
+//编辑器初始化函数，通过回调函数触发
+function contentPageEditorInit(){
+	<if condition="is_string($info['content'])">
+		window.frames["content_page_editor"].setSource(<{:str_replace(array("\\r\\n", "\\n"), "'+\\"\\\\n\\"+'", var_export($info['content'], true))}>);
+	</if>
+}
+
+function contentPageSave(){
+	var data = {};
+	var rows = $('#content_page_propertygrid_id').propertygrid('getRows');
+	for(var i=0; i<rows.length; i++){
+		if(rows[i]['required'] && !rows[i]['value']){
+			$.messager.alert('提示信息', rows[i]['name'].replace('*', '') + '不能为空', 'error');
+			return false;
+		}
+		data[rows[i]['key']] = rows[i]['value'];
+	}
+	data['content'] = window.frames["content_page_editor"].getSource();
+	if(!data['content']){
+		$.messager.alert('提示信息', '内容不能为空', 'error');
+		return false;
+	}
+	
+	$.post('<{:U('Content/page', array('catid'=>$catid, 'dosubmit'=>1))}>', {info: data}, function(res){
+		if(!res.status){
+			$.messager.alert('提示信息', res.info, 'error');
+		}else{
+			$.messager.alert('提示信息', res.info, 'info');
+		}
+	}, 'json');
+}
+
+</script>

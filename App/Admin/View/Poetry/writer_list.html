@@ -1,0 +1,132 @@
+<taglib name="Admin\TagLib\EasyUI" />
+<easyui:datagrid options="datagrid.options" fields="datagrid.fields" />
+<!-- 添加作者 -->
+<div id="poetry_writerlist_add_dialog" class="easyui-dialog" title="添加作者" data-options="modal:true,closed:true,iconCls:'icons-application-application_add',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_writerlist_add_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_writerlist_add_dialog').dialog('close');}}]" style="width:600px;height:400px;"></div>
+<div id="poetry_writerlist_edit_dialog" class="easyui-dialog" title="编辑作者" data-options="modal:true,closed:true,iconCls:'icons-application-application_edit',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_writerlist_edit_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_writerlist_edit_dialog').dialog('close');}}]" style="width:600px;height:400px;"></div>
+
+<div id="poetry_addinfo_dialog" class="easyui-dialog" title="添加作者介绍" data-options="modal:true,closed:true,iconCls:'icons-application-application_add',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_writer_addinfo_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_addinfo_dialog').dialog('close');}}]" style="width:600px;height:400px;"></div>
+
+
+<div id="poetry_editinfo_dialog" class="easyui-dialog" title="修改作者介绍" data-options="modal:true,closed:true,iconCls:'icons-application-application_edit',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_writer_editinfo_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_editinfo_dialog').dialog('close');}}]" style="width:600px;height:400px;"></div>
+
+<script writer="text/javascript">
+    var  poetry_writerlist_datagrid_toolbar = [
+        { text: '添加作者', iconCls: 'icons-table-table_add', handler: poetrywriterListAdd },
+        { text: '刷新', iconCls: 'icons-table-table_refresh', handler: poetrywriterListRefresh },
+        { text: '朝代:<input name="sDynasty" id="sDynasty" style="width:100px" onfocus="loadDynastyData()"/>'},
+        { text: '作者:<input name="sWriter" id="sWriter" style="width:100px" onfocus="loadWriterData()"/>'},
+        { text: '查询', iconCls: 'icons-table-table_search', handler:doSearch }
+    ];
+
+    var wFlag = 0;
+    var dFlag = 0;
+    function loadWriterData(){
+        $("#sWriter").combobox({
+            url:'<{:U('Poetry/getWriterJson')}>',
+                method:'get',
+                valueField:'id',
+                textField:'text',
+                panelHeight:'300'
+        });
+        wFlag =1;
+    }
+
+    function loadDynastyData(){
+        $("#sDynasty").combobox({
+            url:'<{:U('Poetry/getDynastyJson')}>',
+                method:'get',
+                valueField:'id',
+                textField:'text',
+                panelHeight:'300'
+        });
+        dFlag =1;
+    }
+
+    function doSearch(){
+        var where =" 1=1 "
+        if(wFlag==1){
+            var writerid = $("#sWriter").combobox('getValue');
+            if(writerid > 0 && typeof(writerid) != "undefined"){
+                where = where + " and `writerid`= " + writerid;
+            }
+        }
+        if(dFlag==1){
+            var dynastyid = $("#sDynasty").combobox('getValue');
+            if(dynastyid > 0 && typeof(dynastyid) != "undefined"){
+                where = where + " and `dynastyid`= " + dynastyid;
+            }
+        }
+        $('#poetry_writerlist_datagrid').datagrid('load',{'where':where});
+    }
+
+    //操作格式化
+    function poetrywriterListOperateFormatter(val){
+        var btn = [];
+        btn.push('<a href="javascript:void(0);" onclick="poetrywriterListEdit('+val+')">编辑</a>');
+        btn.push('<a href="javascript:void(0);" onclick="poetrywriterListDelete('+val+')">删除</a>');
+        btn.push('<a href="javascript:void(0);" onclick="poetrywriterInfoAdd('+val+')">添加作者介绍</a>');
+        return btn.join(' | ');
+    }
+
+    function poetrywriterListAdd(){
+        $('#poetry_writerlist_add_dialog').dialog({href:'<{:U('Poetry/writerAdd')}>'});
+        $('#poetry_writerlist_add_dialog').dialog('open');
+    }
+
+    //刷新
+    function poetrywriterListRefresh(){
+        $('#poetry_writerlist_datagrid').datagrid('reload');
+    }
+
+    //编辑
+    function poetrywriterListEdit(id){
+        var url = '<{:U('Poetry/writerEdit')}>';
+        url += url.indexOf('?') != -1 ? '&writerid='+id : '?writerid='+id;
+        $('#poetry_writerlist_edit_dialog').dialog({href:url});
+        $('#poetry_writerlist_edit_dialog').dialog('open');
+    }
+
+    //删除
+    function poetrywriterListDelete(id){
+        if(typeof(id) !== 'number'){
+            $.messager.alert('提示信息', '未选择作者', 'error');
+            return false;
+        }
+        $.messager.confirm('提示信息', '确定要删除吗？', function(result){
+            if(!result) return false;
+            $.post('<{:U('Poetry/writerDelete')}>', {id: id}, function(res){
+                if(!res.status){
+                    $.messager.alert('提示信息', res.info, 'error');
+                }else{
+                    $.messager.alert('提示信息', res.info, 'info');
+                    poetrywriterListRefresh();
+                }
+            }, 'json');
+        });
+    }
+
+    function poetrywriterInfoAdd(id){
+        var url = '<{:U('Poetry/addInfo')}>';
+        url += url.indexOf('?') != -1 ? '&fid='+id : '?fid='+id;
+        url += '&cateid=0';
+        $('#poetry_addinfo_dialog').dialog({href:url});
+        $('#poetry_addinfo_dialog').dialog('open');
+    }
+
+    function infosFormatter(val){
+        var btn =[];
+        if(val !=null){
+            $.each(val,function(i,n){
+              btn.push('<a href="javascript:void(0);" onclick="poetrywriterInfoEdit('+ n.infoid +')">'+ n.title +'</a>');
+            });
+        }
+        return  btn.join(' | ');
+    }
+
+    function poetrywriterInfoEdit(id){
+        var url = '<{:U('Poetry/editInfo')}>';
+        url += url.indexOf('?') != -1 ? '&infoid='+id : '?infoid='+id;
+        $('#poetry_editinfo_dialog').dialog({href:url});
+        $('#poetry_editinfo_dialog').dialog('open');
+    }
+</script>

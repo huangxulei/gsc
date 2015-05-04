@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="wangdong">
+<title><{:C('SYSTEM_NAME')}></title>
+<script type="text/javascript" src="__STATIC__/js/jquery.min.js"></script>
+<include file="Common:xheditor" />
+</head>
+<body style="margin:0;padding:0;background:none">
+<textarea id="editor" style="width:100%"></textarea>
+
+<script type="text/javascript">
+var editor = $('#editor').xheditor(xheditorSetting);
+editor.toggleFullscreen(true);
+<{$callback}>
+
+function setSource(html){
+	return editor.setSource(html);
+}
+function getSource(){
+	return editor.getSource();
+}
+</script>
+</body>
+</html>

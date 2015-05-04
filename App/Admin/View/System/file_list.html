@@ -1,0 +1,48 @@
+<taglib name="Admin\TagLib\EasyUI" />
+
+<easyui:treegrid options="treegrid.options" fields="treegrid.fields" />
+
+<!-- 查看文件 -->
+<div id="system_filelist_view_dialog" class="easyui-dialog word-wrap" title="查看文件" data-options="modal:true,closed:true,resizable:true,maximizable:true,iconCls:'icons-application-application_view_detail',buttons:[{text:'关闭',iconCls:'icons-arrow-cross',handler:function(){$('#system_filelist_view_dialog').dialog('close');}}]" style="width:500px;height:360px;line-height:1.5"></div>
+
+
+<script type="text/javascript">
+//操作
+function systemFileOperateFormatter(val, arr){
+	var button = [];
+	if(arr['type'] == 'dir'){
+		button.push('查看');
+		button.push('删除');
+	}else{
+		button.push('<a href="javascript:;" onclick="systemFileView(\''+ encodeURIComponent(arr.name) + '\')">查看</a>');
+		button.push('<a href="javascript:;" onclick="systemFileDelete(\'' + encodeURIComponent(arr.name) + '\')">删除</a>');
+	}
+	return button.join(' | ');
+}
+//查看文件
+function systemFileView(filename){
+	var id = 'system_filelist_view_dialog';
+	var url = '<{:U('System/fileView')}>';
+	url += url.indexOf('?') != -1 ? '&filename='+filename : '?filename='+filename;
+	$('#'+id).dialog({href: url});
+	$('#'+id).dialog('open');
+}
+//删除文件
+function systemFileDelete(filename){
+	if(typeof(filename) !== 'string'){
+		$.messager.alert('提示信息', '未选择文件', 'error');
+		return false;
+	}
+	$.messager.confirm('提示信息', '确定要删除吗？', function(result){
+		if(!result) return false;
+		$.post('<{:U('System/fileDelete')}>', {filename: filename}, function(res){
+			if(!res.status){
+				$.messager.alert('提示信息', res.info, 'error');
+			}else{
+				$.messager.alert('提示信息', res.info, 'info');
+				$('#system_filelist_treegrid').treegrid('reload');
+			}
+		}, 'json');
+	});
+}
+</script>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<title>对不起，页面出错</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style type="text/css">
+		body {
+			background-color: #F7F8F9;
+			color: #3C4E5A;
+			font-family: "Lato",Helvetica,Arial,sans-serif;
+			font-size: 14px;
+			line-height: 1.42857;
+		}
+		a {
+			color: #2980B9;
+			text-decoration: none;
+			transition: color 0.2s linear 0s;
+		}
+		a:hover, a:focus {
+			color: #1B557A;
+			text-decoration: underline;
+			transition: color 0.2s linear 0s;
+		}
+		a:focus {
+			outline: thin dotted;
+			outline-offset: -2px;
+		}
+	</style>
+</head>
+
+<body>
+	<div>
+		<h1>对不起，页面出错了</h1>
+		<ol style="padding: 0 0 0 30px">
+			<li>访问页面不存在.</li>
+			<li>访问页面时发生错误.</li>
+			<li>如果您不能确认您输入的网址,请返回 <a href="<?php echo SITE_URL;?>">首页</a>. </li>
+		</ol>
+		<p><i id="wait">5</i> 秒后，将自动转向首页.</p>
+	</div>
+
+	<script type="text/javascript">
+		(function(){
+			var wait = document.getElementById('wait');
+			var interval = setInterval(function(){
+				var time = --wait.innerHTML;
+				if(time <= 0) {
+					location.href = '<?php echo SITE_URL;?>';
+					clearInterval(interval);
+				};
+			}, 1000);
+		})();
+	</script>
+</body>
+</html>

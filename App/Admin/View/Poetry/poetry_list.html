@@ -1,0 +1,157 @@
+<taglib name="Admin\TagLib\EasyUI" />
+<easyui:datagrid options="datagrid.options" fields="datagrid.fields" />
+<!-- 添加作品 -->
+<div id="poetry_poetrylist_add_dialog" class="easyui-dialog" title="添加作品" data-options="modal:true,closed:true,iconCls:'icons-application-application_add',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_poetrylist_add_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_poetrylist_add_dialog').dialog('close');}}]" style="width:560px;height:340px;"></div>
+
+<div id="poetry_poetrylist_edit_dialog" class="easyui-dialog" title="编辑作品" data-options="modal:true,closed:true,iconCls:'icons-application-application_edit',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_poetrylist_edit_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_poetrylist_edit_dialog').dialog('close');}}]" style="width:580px;height:340px;"></div>
+
+<div id="poetry_addinfo_dialog" class="easyui-dialog" title="添加作品介绍" data-options="modal:true,closed:true,iconCls:'icons-application-application_add',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_writer_addinfo_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_addinfo_dialog').dialog('close');}}]" style="width:600px;height:400px;"></div>
+
+
+<div id="poetry_editinfo_dialog" class="easyui-dialog" title="修改作品介绍" data-options="modal:true,closed:true,iconCls:'icons-application-application_edit',buttons:[{text:'确定',iconCls:'icons-other-tick',handler:function(){$('#poetry_writer_editinfo_dialog_form').submit();}},{text:'取消',iconCls:'icons-arrow-cross',handler:function(){$('#poetry_editinfo_dialog').dialog('close');}}]" style="width:600px;height:400px;"></div>
+<script type="text/javascript">
+
+
+    var  poetry_poetrylist_datagrid_toolbar = [
+        { text: '添加作品', iconCls: 'icons-table-table_add', handler: poetrypoetryListAdd },
+        { text: '刷新', iconCls: 'icons-table-table_refresh', handler: poetrypoetryListRefresh },
+        { text: '作者:<input name="searchWriter" id="searchWriter" style="width:100px" onfocus="loadWriterData()"/>'},
+        { text: '类型:<input name="searchType" id="searchType" style="width:100px" onfocus="loadTypeData()"/>'},
+        { text: '作品名:<input name="searchTitle" id="searchTitle" style="width:250px" onfocus="loadTitleData()"/>'},
+        { text: '查询', iconCls: 'icons-table-table_search', handler:doSearch }
+    ];
+
+
+    var wFlag = 0;
+    var tFlag = 0;
+    var tiFlag = 0;
+
+    function loadWriterData(){
+        $("#searchWriter").combobox({
+                url:'<{:U('Poetry/getWriterJson')}>',
+                method:'get',
+                valueField:'id',
+                textField:'text',
+                panelHeight:'300'
+        });
+        wFlag =1;
+    }
+
+    function loadTypeData(){
+        $("#searchType").combobox({
+            url:'<{:U('Poetry/getTypeJson')}>',
+                method:'get',
+                valueField:'id',
+                textField:'text',
+                panelHeight:'300'
+        });
+        tFlag = 1;
+    }
+
+    function loadTitleData(){
+        $("#searchTitle").combobox({
+            url:'<{:U('Poetry/getTitleJson')}>',
+                method:'get',
+                valueField:'id',
+                textField:'text',
+                panelHeight:'400'
+        });
+        tiFlag = 1;
+    }
+
+    function doSearch(){
+
+        var where =" 1=1 "
+        if(wFlag==1){
+            var writerid = $("#searchWriter").combobox('getValue');
+            if(writerid > 0 && typeof(writerid) != "undefined"){
+                where = where + " and `writerid`= " + writerid;
+            }
+        }
+
+        if(tFlag==1){
+            var typeid = $("#searchType").combobox('getValue');
+            if(typeid > 0 && typeof(typeid) != "undefined"){
+                where = where + " and (`typeid` like '"+typeid +",%' or `typeid` like '%,"+typeid +"' or `typeid` like '%,"+typeid +",%' or `typeid`="+typeid+")";
+            }
+        }
+
+        if(tiFlag ==1){
+            var poetryid = $("#searchTitle").combobox('getValue');
+            if(poetryid > 0 && typeof(poetryid) != "undefined"){
+                where = where + " and poetryid = "+poetryid;
+            }
+        }
+        $('#poetry_poetrylist_datagrid').datagrid('load',{'where':where});
+    }
+
+    //操作格式化
+    function poetrypoetryListOperateFormatter(val){
+        var btn = [];
+        btn.push('<a href="javascript:void(0);" onclick="poetrypoetryListEdit('+val+')">编辑</a>');
+        btn.push('<a href="javascript:void(0);" onclick="poetrypoetryListDelete('+val+')">删除</a>');
+        btn.push('<a href="javascript:void(0);" onclick="poetrypoetryAddInfo('+val+')">添加作品翻译</a>');
+        return btn.join(' | ');
+    }
+    function poetrypoetryAddInfo(id){
+        var url = '<{:U('Poetry/addInfo')}>';
+        url += url.indexOf('?') != -1 ? '&fid='+id : '?fid='+id;
+        url += '&cateid=1';
+        $('#poetry_addinfo_dialog').dialog({href:url});
+        $('#poetry_addinfo_dialog').dialog('open');
+
+    }
+    function poetrypoetryListAdd(){
+        $('#poetry_poetrylist_add_dialog').dialog({href:'<{:U('Poetry/poetryAdd')}>'});
+        $('#poetry_poetrylist_add_dialog').dialog('open');
+    }
+
+    //刷新
+    function poetrypoetryListRefresh(){
+        $('#poetry_poetrylist_datagrid').datagrid('reload');
+    }
+
+    //编辑
+    function poetrypoetryListEdit(id){
+        var url = '<{:U('Poetry/poetryEdit')}>';
+        url += url.indexOf('?') != -1 ? '&poetryid='+id : '?poetryid='+id;
+        $('#poetry_poetrylist_edit_dialog').dialog({href:url});
+        $('#poetry_poetrylist_edit_dialog').dialog('open');
+    }
+
+    //删除
+    function poetrypoetryListDelete(id){
+        if(typeof(id) !== 'number'){
+            $.messager.alert('提示信息', '未选择作品', 'error');
+            return false;
+        }
+        $.messager.confirm('提示信息', '确定要删除吗？', function(result){
+            if(!result) return false;
+            $.post('<{:U('Poetry/poetryDelete')}>', {id: id}, function(res){
+                if(!res.status){
+                    $.messager.alert('提示信息', res.info, 'error');
+                }else{
+                    $.messager.alert('提示信息', res.info, 'info');
+                    poetrypoetryListRefresh();
+                }
+            }, 'json');
+        });
+    }
+
+    function infosFormatter(val){
+        var btn =[];
+        if(val !=null){
+            $.each(val,function(i,n){
+                btn.push('<a href="javascript:void(0);" onclick="poetryInfoEdit('+ n.infoid +')">'+ n.title +'</a>');
+            });
+        }
+        return  btn.join(' | ');
+    }
+
+    function poetryInfoEdit(id){
+        var url = '<{:U('Poetry/editInfo')}>';
+        url += url.indexOf('?') != -1 ? '&infoid='+id : '?infoid='+id;
+        $('#poetry_editinfo_dialog').dialog({href:url});
+        $('#poetry_editinfo_dialog').dialog('open');
+    }
+</script>

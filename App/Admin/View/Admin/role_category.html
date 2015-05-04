@@ -1,0 +1,64 @@
+<taglib name="Admin\TagLib\EasyUI" />
+
+<easyui:treegrid options="treegrid.options" fields="treegrid.fields" />
+
+<form id="admin_rolelist_category_dialog_form" onsubmit="return adminRoleCategoryDialogFormSubmit();"></form>
+
+<script type="text/javascript">
+//权限字段格式化
+function adminRoleCategoryFieldFormatter(val, arr){
+	var row = ['<input type="checkbox"'];
+	row.push('class="admin_role_cagetory_field_class_' + arr['catid'] + '"');
+	row.push('catid="' + arr['catid'] + '"');
+	row.push('value="' + val + '"');
+	
+	if(arr['checked_' + val]) row.push('checked');
+	
+	switch(arr['type']){
+		case '1':
+			if(val != 'view') row.push('disabled');
+			break;
+		case '2':
+			row.push('disabled');
+			break;
+	}
+	row.push('/>');
+	return row.join(' ');
+}
+//全选或取消格式化
+function adminRoleCategoryFieldCheckFormatter(val, arr){
+	return '<input type="checkbox" value="' + arr['catid'] + '" onclick="adminRoleCategoryFieldCheckClick(this)" />';
+}
+
+//全选或取消操作
+function adminRoleCategoryFieldCheckClick(that){
+	$('input.admin_role_cagetory_field_class_' + that.value).each(function(i, obj){
+		if(that.checked && !obj.checked){
+			obj.checked = true;
+		}else if(!that.checked && obj.checked){
+			obj.checked = false;
+		}
+	});
+}
+
+//保存
+function adminRoleCategoryDialogFormSubmit(){
+	var data = {};
+	$('#admin_rolelist_category_dialog').find('input[type="checkbox"]:checked').each(function(i, obj){
+		var catid = $(obj).attr('catid') || 0;
+		if(catid && !obj.disabled && obj.value){
+			if(!data[catid]) data[catid] = [];
+			data[catid].push(obj.value);
+		}
+	});
+	$.post('<{:U('Admin/roleCategory?dosubmit=1&id=' . $id)}>', {info: data}, function(res){
+		if(!res.status){
+			$.messager.alert('提示信息', res.info, 'error');
+		}else{
+			$.messager.alert('提示信息', res.info, 'info');
+			$('#admin_rolelist_category_dialog').dialog('close');
+		}
+	});
+	return false;
+}
+</script>

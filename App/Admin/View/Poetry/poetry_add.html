@@ -1,0 +1,128 @@
+<script type="text/javascript">
+	$(function(){
+		$.formValidator.initConfig({formID:"poetry_poetrylist_add_dialog_form",onError:function(msg){/*$.messager.alert('错误提示', msg, 'error');*/},onSuccess:poetryPoetrylistAddDialogFormSubmit,submitAfterAjaxPrompt:'有数据正在异步验证，请稍等...',inIframe:true});
+		$("#poetry_poetrylist_add_dialog_form_title").formValidator({onShow:"请输入作品名称",onFocus:"作品名称不能为空"}).inputValidator({min:1,max:999,onError:"作品名称不能为空"}).ajaxValidator({
+			type : "post",
+			url : "<{:U('Poetry/public_checkPoetryTitle')}>",
+			data : {title:function(){return $("#poetry_poetrylist_add_dialog_form_title").val()} },
+			datatype : "json",
+			async:'false',
+			success : function(data){
+				var json = $.parseJSON(data);
+				return json.status == 1 ? false : true;
+			},
+			onError : "作品名称已存在",
+			onWait : "请稍候..."
+		});
+
+        var types = '<{:S('typeid')}>'.split(',');
+        console.log('types',types);
+        $("#poetry_poetry_add_dialog_form_type").combobox({
+            url:'<{:U('Poetry/getTypeJson')}>',
+                method:'get',
+                valueField:'id',
+                textField:'text',
+                multiple:true,
+                panelHeight:'300',
+                onLoadSuccess: function () {
+                    for(var i=0;i<types.length;i++){
+                       $(this).combobox("select", types[i]);
+                    }
+                }
+        });
+
+       var writerid = '<{:S('writerid')}>';
+       $("#poetry_poetry_add_dialog_form_writer").combobox({
+            url:'<{:U('Poetry/getWriterJson')}>',
+            method:'get',
+            valueField:'id',
+            textField:'text',
+            panelHeight:'200',
+            onLoadSuccess: function () {
+                $(this).combobox("select", writerid);
+            }
+        });
+
+
+	})
+	function poetryPoetrylistAddDialogFormSubmit(){
+        var data ={ };
+        data['title'] = $("#poetry_poetrylist_add_dialog_form_title").val();
+        if(!data['title']){
+            $.messager.alert('提示信息', '作品名不能为空', 'error');
+            return false;
+        }
+        data['writerid'] = $("#poetry_poetry_add_dialog_form_writer").combobox('getValue');
+        data['kindid'] = $("#poetry_poetry_add_dialog_form_kind").val();
+        data['typeid'] = $("#poetry_poetry_add_dialog_form_type").combobox('getValues');
+        if(data['typeid'].length > 1){
+            data['typeid'] = data['typeid'].join(',');
+        }else{
+            data['typeid']=data['typeid'][0];
+        }
+
+        data['content'] = $("#poetry_add_content").val();
+        if(!data['content']){
+            $.messager.alert('提示信息', '作品内容不能为空', 'error');
+            return false;
+        }
+
+		$.post('<{:U('Poetry/poetryAdd')}>',  {info: data}, function(res){
+			if(!res.status){
+				$.messager.alert('提示信息', res.info, 'error');
+			}else{
+				$.messager.alert('提示信息', res.info, 'info');
+				$('#poetry_poetrylist_add_dialog').dialog('close');
+                poetrypoetryListRefresh();
+			}
+		});
+	}
+</script>
+
+<form id="poetry_poetrylist_add_dialog_form">
+	<table cellpadding="2" cellspacing="2" width="545">
+		<tr>
+			<td width="60">作品名字：</td>
+			<td><input id="poetry_poetrylist_add_dialog_form_title" type="text" name="info[title]" style="width:180px;height:22px" /></td>
+			<td><div id="poetry_poetrylist_add_dialog_form_titleTip"></div></td>
+		</tr>
+        <tr>
+            <td>形式：</td>
+            <td>
+                <select id="poetry_poetry_add_dialog_form_kind" name="info[kindid]" style="width:80px">
+                    <foreach name="kindlist" item="kind">
+                        <option value="<{$key}>"<if condition="$key eq S('kindid')"> selected="selected"</if>><{$kind}></option>
+                    </foreach>
+                </select>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>作者：</td>
+            <td>
+                <input id="poetry_poetry_add_dialog_form_writer" name="info[writerid]" style="width:100px">
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>类型：
+            </td>
+            <td> <input class="easyui-combobox" name="info[typeid]" id="poetry_poetry_add_dialog_form_type"
+                      style="width: 300px">
+            </td>
+        </tr>
+		<tr>
+			<td>作品内容：</td>
+			<td colspan="2" height="105">
+                <textarea id="poetry_add_content" name="info[content]"  style="width:95%;display: none;" rows="5" >
+                </textarea>
+                <script>
+                    $('#poetry_add_content').xheditor({tools:'Bold,Source,Pastetext',forcePtag:false,
+                        forcePasteText:true});
+                </script>
+
+			</td>
+		</tr>
+
+	</table>
+</form>

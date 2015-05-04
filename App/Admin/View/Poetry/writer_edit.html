@@ -1,0 +1,75 @@
+<script writer="text/javascript">
+	$(function(){
+		$.formValidator.initConfig({formID:"poetry_writerlist_edit_dialog_form",onError:function(msg){/*$.messager.alert('错误提示', msg, 'error');*/},onSuccess:poetryWriterlistAddDialogFormSubmit,submitAfterAjaxPrompt:'有数据正在异步验证，请稍等...',inIframe:true});
+		$("#poetry_writerlist_edit_dialog_form_name").formValidator({onShow:"请输入分类名称",onFocus:"作者名字不能为空"}).inputValidator({min:1,max:999,onError:"作者名字不能为空"}).ajaxValidator({
+			type : "post",
+			url : "<{:U('Poetry/public_checkWriterName')}>",
+            data : {writername:function(){return $("#poetry_writerlist_edit_dialog_form_name").val()}, default:'<{$info.writername}>'},
+			datatype : "json",
+			async:'false',
+			success : function(data){
+				var json = $.parseJSON(data);
+				return json.status == 1 ? false : true;
+			},
+			onError : "作者名字已存在",
+			onWait : "请稍候..."
+		});
+	})
+	function poetryWriterlistAddDialogFormSubmit(){
+        var data ={ };
+        data['writername'] = $("#poetry_writerlist_edit_dialog_form_name").val();
+        if(!data['writername']){
+            $.messager.alert('提示信息', '作者名不能为空', 'error');
+            return false;
+        }
+        data['dynastyid'] = $("#poetry_writer_edit_dialog_form_dynasty").val();
+        //作者简介处理
+        data['summary'] = $("#poetry_writer_edit_dialog_form_summary").val();
+        if(!data['summary']){
+            $.messager.alert('提示信息', '作者简介不能为空', 'error');
+            return false;
+        }
+		$.post('<{:U('Poetry/writerEdit',array('writerid'=>$info['writerid']))}>',  {info: data}, function(res){
+			if(!res.status){
+				$.messager.alert('提示信息', res.info, 'error');
+			}else{
+				$.messager.alert('提示信息', res.info, 'info');
+				$('#poetry_writerlist_edit_dialog').dialog('close');
+                poetrywriterListRefresh();
+			}
+		})
+	}
+
+</script>
+
+<form id="poetry_writerlist_edit_dialog_form">
+	<table cellspacing="6" width="580">
+		<tr>
+			<td width="70">作者名字：</td>
+			<td><input id="poetry_writerlist_edit_dialog_form_name" type="text" name="info[writername]" style="width:180px;height:22px" value="<{$info.writername}>" /></td>
+			<td><div id="poetry_writerlist_edit_dialog_form_nameTip"></div></td>
+		</tr>
+        <tr>
+            <td>朝代：</td>
+            <td>
+                <select id="poetry_writer_edit_dialog_form_dynasty" name="info[dynastyid]"  style="width:80px">
+                    <foreach name="dynastylist" item="dynasty">
+                        <option value="<{$key}>"<if condition="$key eq $info['dynastyid']"> selected="selected"</if> ><{$dynasty}></option>
+                    </foreach>
+                </select>
+            </td>
+            <td></td>
+        </tr>
+		<tr>
+			<td>作者简介：</td>
+			<td colspan="2">
+                <textarea id="poetry_writer_edit_dialog_form_summary" name="info[summary]"  style="width:95%;display: none;" rows="10" >
+                    <{$info.summary}>
+                </textarea>
+                <script>
+                    $('#poetry_writer_edit_dialog_form_summary').xheditor({tools:'Bold,Source,Pastetext',forcePtag:false});
+                </script>
+			</td>
+		</tr>
+	</table>
+</form>

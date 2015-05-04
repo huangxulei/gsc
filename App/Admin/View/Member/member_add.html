@@ -1,0 +1,62 @@
+<script type="text/javascript">
+$(function(){
+	$.formValidator.initConfig({formID:"member_memberlist_add_dialog_form",onError:function(msg){/*$.messager.alert('错误提示', msg, 'error');*/},onSuccess:memberMemberlistAddDialogFormSubmit,submitAfterAjaxPrompt:'有数据正在异步验证，请稍等...',inIframe:true});
+	$("#member_memberlist_add_dialog_form_username").formValidator({onShow:"请输入E-mail", onFocus:"请输入E-mail"}).regexValidator({regExp:"email",dataType:"enum",onError:"E-mail格式错误"}).ajaxValidator({
+		type : "post",
+		url : "<{:U('Member/public_checkName')}>",
+		data : {name:function(){return $("#member_memberlist_add_dialog_form_username").val()} },
+		datatype : "json",
+		async:'false',
+		success : function(data){
+			var json = $.parseJSON(data);
+            return json.status == 1 ? false : true;
+		},
+		onError : "用户名已存在",
+		onWait : "请稍候..."
+	});
+	$("#member_memberlist_add_dialog_form_password").formValidator({onShow:"请输入密码",onFocus:"密码应该为6-20位之间"}).inputValidator({min:6,max:20,onError:"密码应该为6-20位之间"});
+	$("#member_memberlist_add_dialog_form_pwdconfirm").formValidator({onShow:"请输入确认密码",onFocus:"请输入确认密码"}).compareValidator({desID:"member_memberlist_add_dialog_form_password",operateor:"=",onError:"输入两次密码不一致"});
+	$("#member_memberlist_add_dialog_form_type").formValidator({onShow:"请选择用户分类",onFocus:"请选择用户分类"}).inputValidator({min:0,onError:"请选择用户分类"});
+})
+function memberMemberlistAddDialogFormSubmit(){
+	$.post('<{:U('Member/memberAdd')}>', $("#member_memberlist_add_dialog_form").serialize(), function(res){
+		if(!res.status){
+			$.messager.alert('提示信息', res.info, 'error');
+		}else{
+			$.messager.alert('提示信息', res.info, 'info');
+			$('#member_memberlist_add_dialog').dialog('close');
+			memberMemberRefresh();
+		}
+	})
+}
+</script>
+<form id="member_memberlist_add_dialog_form">
+<table>
+	<tr>
+		<td width="80">用户名：</td>
+		<td><input id="member_memberlist_add_dialog_form_username" type="text" name="info[username]" style="width:180px;height:22px" /></td>
+		<td><div id="member_memberlist_add_dialog_form_usernameTip"></div></td>
+	</tr>
+	<tr>
+		<td>密码：</td>
+		<td><input id="member_memberlist_add_dialog_form_password" type="password" name="info[password]" style="width:180px;height:22px" /></td>
+		<td><div id="member_memberlist_add_dialog_form_passwordTip"></div></td>
+	</tr>
+	<tr>
+		<td>确认密码：</td>
+		<td><input id="member_memberlist_add_dialog_form_pwdconfirm" type="password" style="width:180px;height:22px" /></td>
+		<td><div id="member_memberlist_add_dialog_form_pwdconfirmTip"></div></td>
+	</tr>
+	<tr>
+		<td>用户分类：</td>
+		<td>
+			<select id="member_memberlist_add_dialog_form_type" class="easyui-combobox" data-options="editable:false,panelHeight:'auto'" name="info[typeid]" style="height:25px">
+			<foreach name="typelist" key="typeid" item="typename">
+				<option value="<{$typeid}>"><{$typename}></option>
+			</foreach>
+			</select>
+		</td>
+		<td><div id="member_memberlist_add_dialog_form_typeTip"></div></td>
+	</tr>
+</table>
+</form>
